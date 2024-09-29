@@ -36,15 +36,15 @@ def GetScorecardFromElement(element):
     if not (isinstance(element,BeautifulSoup) or isinstance(element,Tag)):
         raise TypeError('Expected BeautifulSoup or Tag object')
     
-    state_element = element.find('div',class_ = 'StatusLayerstyle__StatusContainer-sc-1s2c2o8-0 jHnypr')
+    state_element = element.find('div',class_ = 'StatusLayerstyle__StatusContainer-sc-1s2c2o8-0')
     team_name_elements = element.find_all('div',class_ = 'TeamWrappersstyle__MobileTeamWrapper-sc-uqs6qh-1 jXnGyx')
     scoreboard_element = element.find('table',class_ = 'tablestyle__StyledTable-sc-wsl6eq-0 fxhlOg')
 
-    state_span = state_element.find('span',class_ = 'StatusLayerstyle__GameStateWrapper-sc-1s2c2o8-3 feaLYF')
+    state_span = state_element.find('span',class_ = 'StatusLayerstyle__GameStateWrapper-sc-1s2c2o8-3')
     if state_span is not None:
         state = state_span.text
     else:
-        state = state_element.find('div',class_='StatusLayerstyle__StatusLayerValue-sc-1s2c2o8-2 cBEKUV').contents[0].text
+        state = None
 
     team_names = [x.text for x in team_name_elements]
 
