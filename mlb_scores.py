@@ -1,8 +1,8 @@
-from bs4 import BeautifulSoup, Tag
 import requests
+import warnings
+from bs4 import BeautifulSoup, Tag
 from dates import Date
 from scorecard import Scorecard
-import warnings
 
 _score_url = "https://www.mlb.com/scores/"
 
@@ -33,6 +33,9 @@ def ContainerIsEmpty(soup):
     return True
 
 def GetScorecardFromElement(element):
+    if not (isinstance(element,BeautifulSoup) or isinstance(element,Tag)):
+        raise TypeError('Expected BeautifulSoup or Tag object')
+    
     state_element = element.find('div',class_ = 'StatusLayerstyle__StatusContainer-sc-1s2c2o8-0 jHnypr')
     team_name_elements = element.find_all('div',class_ = 'TeamWrappersstyle__MobileTeamWrapper-sc-uqs6qh-1 jXnGyx')
     scoreboard_element = element.find('table',class_ = 'tablestyle__StyledTable-sc-wsl6eq-0 fxhlOg')

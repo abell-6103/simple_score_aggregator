@@ -19,3 +19,6 @@ class Date:
 
     def mlb_str(self):
         return f"{self.year}-{self.month:02d}-{self.day:02d}"
+    
+    def nba_str(self):
+        return f"{self.year}-{self.month:02d}-{self.day:02d}"

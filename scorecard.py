@@ -24,3 +24,14 @@ class Scorecard:
 
     def setState(self,state):
         self.game_state = state
+
+    def asdict(self):
+        return {
+            'name_team1' : self.name_team1,
+            'name_team2' : self.name_team2,
+            'score_team1' : self.score_team1,
+            'score_team2' : self.score_team2,
+            'game_state' : self.game_state
+        }
+    
+    
