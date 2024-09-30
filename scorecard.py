@@ -1,3 +1,5 @@
+from datetime import date
+
 class Scorecard:
     def __init__(self):
         self.name_team1 = None
@@ -5,6 +7,7 @@ class Scorecard:
         self.score_team1 = None
         self.score_team2 = None
         self.game_state = None
+        self.date = None
 
     def __repr__(self):
         score_str = ""
@@ -13,6 +16,8 @@ class Scorecard:
             score_str += f'\n{self.score_team1}-{self.score_team2}'
         if self.game_state is not None:
             score_str += f'\n{self.game_state}'
+        if self.date is not None:
+            score_str += f'\n{str(self.date)}'
         return score_str
 
     def setNames(self,name_team1,name_team2):
@@ -25,6 +30,11 @@ class Scorecard:
 
     def setState(self,state):
         self.game_state = state
+
+    def setDate(self,day):
+        if not isinstance(day,date):
+            raise TypeError('Expected date object')
+        self.date = day
 
     def asdict(self):
         return {

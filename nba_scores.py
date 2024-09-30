@@ -2,15 +2,15 @@ import requests
 import warnings
 import json
 from bs4 import BeautifulSoup, Tag
-from dates import Date
+from datetime import date
 from scorecard import Scorecard
 
 _score_url = 'https://www.nba.com/games?date='
 
 def GetScoreUrl(day):
-    if not isinstance(day,Date):
+    if not isinstance(day,date):
         raise TypeError('Expected Date object')
-    return _score_url + day.nba_str()
+    return _score_url + str(day)
 
 def GetSite(day):
     score_url = GetScoreUrl(day)
@@ -42,14 +42,14 @@ def NoScores(scorecard_json):
         return False
     return True
 
-def ProcessCard(card):
+def ProcessCard(card,day):
     data = card['cardData']
     home_team = data['homeTeam']
     away_team = data['awayTeam']
     status_num = data['gameStatus']
 
     state = data['gameStatusText']
-    team_names = [away_team['teamTricode'],home_team['teamTricode']]
+    team_names = [away_team['teamName'],home_team['teamName']]
     if status_num == 1:
         scores = [None,None]
     else:
@@ -59,6 +59,7 @@ def ProcessCard(card):
     scorecard.setState(state)
     scorecard.setNames(team_names[0],team_names[1])
     scorecard.setScore(scores[0],scores[1])
+    scorecard.setDate(day)
 
     return scorecard
 
@@ -78,14 +79,12 @@ def GetScores(day):
 
     cards = scorecard_json['props']['pageProps']['gameCardFeed']['modules'][0]['cards']
 
-    scorecards = [ProcessCard(card) for card in cards]
+    scorecards = [ProcessCard(card,day) for card in cards]
 
     return scorecards
     
 def main():
-    today = Date()
-    #today.SetToday()
-    today.SetDate(2024,11,11)
+    today = date(1969,4,20)
     scores = GetScores(today)
     for score in scores:
         print(score,end='\n\n')
