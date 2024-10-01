@@ -148,7 +148,7 @@ def GetRegularSeasonLength(year,year_override = False):
         raise ValueError('Year cannot be earlier than 2013')
     elif 2000 <= year and year < 2021:
         return 17
-    elif 2021 < year and (year < 2025 or year_override):
+    elif 2021 <= year and (year < 2025 or year_override):
         return 18
     elif year_override:
         raise ValueError(f'Season length for {year} is not defined')

@@ -11,13 +11,24 @@ class Scorecard:
 
     def __repr__(self):
         score_str = ""
-        score_str += f'{self.name_team1} @ {self.name_team2}'
-        if not (self.score_team1 is None or self.score_team2 is None):
-            score_str += f'\n{self.score_team1}-{self.score_team2}'
+
+        if self.score_team1 is not None and self.score_team2 is not None and self.name_team1 is not None and self.name_team2 is not None:
+            score_str += "{:<30}{:>3}\n".format(self.name_team1,self.score_team1)
+            score_str += "{:<30}{:>3}".format(self.name_team2,self.score_team2)
+        elif self.name_team1 is not None and self.name_team2 is not None:
+            score_str += f'{self.name_team1}\n{self.name_team2}'
+
+        footer_added = False
         if self.game_state is not None:
             score_str += f'\n{self.game_state}'
+            footer_added = True
         if self.date is not None:
-            score_str += f'\n{str(self.date)}'
+            if not footer_added:
+                score_str += '\n'
+            else:
+                score_str += ' '
+            score_str += f'({str(self.date)})'
+
         return score_str
 
     def setNames(self,name_team1,name_team2):

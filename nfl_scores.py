@@ -77,7 +77,7 @@ def GetData(soup):
 
     return details
 
-def GetTeamDict(TeamsStore):
+def GetTeamDict(TeamsStore,season):
     teams = {}
 
     teams_data = TeamsStore['teams']
@@ -87,6 +87,11 @@ def GetTeamDict(TeamsStore):
         team_data = teams_data[team_id]
         abbr = team_data['abbr']
         last_name = team_data['last_name']
+
+        if last_name == 'Commanders' and season < 2020:
+            last_name = 'Redskins'
+        elif last_name == 'Commanders' and season < 2022:
+            last_name = 'Washington Football Team'
 
         teams[team_id] = last_name
 
@@ -127,7 +132,11 @@ def GetScorecards(GamesStore,TeamsDict,week):
 
 
 def GetScores(day,year_override = False):
-    week = weeks.FindNearestWeek(day)
+    try:
+        week = weeks.FindNearestWeek(day)
+    except ValueError:
+        return []
+    
     if week is None:
         return []
 
@@ -151,7 +160,7 @@ def GetScores(day,year_override = False):
         return []
     
     TeamsStore = data['context']['dispatcher']['stores']['TeamsStore']
-    TeamsDict = GetTeamDict(TeamsStore)
+    TeamsDict = GetTeamDict(TeamsStore,week.season)
     if len(TeamsDict) < 1:
         warnings.warn('Could not load teams')
         return []
