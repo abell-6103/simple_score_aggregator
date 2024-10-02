@@ -85,15 +85,24 @@ def GetTeamDict(TeamsStore,season):
         if str.find(team_id,'nfl.t') == -1:
             continue
         team_data = teams_data[team_id]
-        abbr = team_data['abbr']
         last_name = team_data['last_name']
+        abbr = team_data['abbr']
 
         if last_name == 'Commanders' and season < 2020:
             last_name = 'Redskins'
         elif last_name == 'Commanders' and season < 2022:
             last_name = 'Washington Football Team'
 
-        teams[team_id] = last_name
+        if abbr == 'LV' and season < 2020:
+            abbr = 'OAK'
+        
+        if abbr == 'LA' and season < 2016:
+            abbr = 'STL'
+
+        if abbr == 'LAC' and season < 2017:
+            abbr = 'SD'
+
+        teams[team_id] = [last_name,abbr]
 
     return teams
 
@@ -112,8 +121,11 @@ def GetScorecards(GamesStore,TeamsDict,week):
 
         game = games[game_tag]
 
-        team1_name = TeamsDict[game['away_team_id']]
-        team2_name = TeamsDict[game['home_team_id']]
+        team1_name = TeamsDict[game['away_team_id']][0]
+        team2_name = TeamsDict[game['home_team_id']][0]
+
+        team1_abbr = TeamsDict[game['away_team_id']][1]
+        team2_abbr = TeamsDict[game['home_team_id']][1]
 
         team1_score = game['total_away_points']
         team2_score = game['total_home_points']
@@ -122,6 +134,7 @@ def GetScorecards(GamesStore,TeamsDict,week):
 
         scorecard = Scorecard()
         scorecard.setNames(team1_name,team2_name)
+        scorecard.setAbbrs(team1_abbr,team2_abbr)
         scorecard.setScore(team1_score,team2_score)
         scorecard.setState(game_status)
         scorecard.setDate(game_day)
@@ -168,7 +181,9 @@ def GetScores(day,year_override = False):
     GamesStore = data['context']['dispatcher']['stores']['GamesStore']
     scorecards = GetScorecards(GamesStore,TeamsDict,week)
     
-    return scorecards
+    scores = sorted(scorecards,key= lambda x: x.date)
+
+    return scores
     
 def main():
     today = date.today()

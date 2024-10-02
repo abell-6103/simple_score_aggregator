@@ -38,6 +38,7 @@ def GetScorecardFromElement(element,day):
     
     state_element = element.find('div',class_ = 'StatusLayerstyle__StatusContainer-sc-1s2c2o8-0')
     team_name_elements = element.find_all('div',class_ = 'TeamWrappersstyle__DesktopTeamWrapper-sc-uqs6qh-0 fdaoCu')
+    team_abbr_elements = element.find_all('div',class_ = 'TeamWrappersstyle__MobileTeamWrapper-sc-uqs6qh-1 jXnGyx')
     scoreboard_element = element.find('table',class_ = 'tablestyle__StyledTable-sc-wsl6eq-0 fxhlOg')
 
     state_span = state_element.find('span',class_ = 'StatusLayerstyle__GameStateWrapper-sc-1s2c2o8-3')
@@ -47,6 +48,7 @@ def GetScorecardFromElement(element,day):
         state = None
 
     team_names = [x.text for x in team_name_elements]
+    team_abbrs = [x.text for x in team_abbr_elements]
 
     try:
         scoreboard_rows = scoreboard_element.find('tbody').find_all('tr')
@@ -59,6 +61,7 @@ def GetScorecardFromElement(element,day):
     scorecard = Scorecard()
     scorecard.setState(state)
     scorecard.setNames(team_names[0],team_names[1])
+    scorecard.setAbbrs(team_abbrs[0],team_abbrs[1])
     scorecard.setScore(scores[0],scores[1])
     scorecard.setDate(day)
 
@@ -82,7 +85,9 @@ def GetScores(day):
     scorecard_elements = gameContainer.find_all('div',class_ = 'ScoresGamestyle__ExpandedScoresGameWrapper-sc-7t80if-0 ScoresGamestyle__DesktopScoresGameWrapper-sc-7t80if-1 gPLsYH')
     scorecards = [GetScorecardFromElement(element,day) for element in scorecard_elements]
 
-    return scorecards
+    scores = sorted(scorecards)
+
+    return scores
 
 def main():
     today = date.today()

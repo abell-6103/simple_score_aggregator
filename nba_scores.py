@@ -50,6 +50,7 @@ def ProcessCard(card,day):
 
     state = data['gameStatusText']
     team_names = [away_team['teamName'],home_team['teamName']]
+    team_abbrs = [away_team['teamTricode'],home_team['teamTricode']]
     if status_num == 1:
         scores = [None,None]
     else:
@@ -58,6 +59,7 @@ def ProcessCard(card,day):
     scorecard = Scorecard()
     scorecard.setState(state)
     scorecard.setNames(team_names[0],team_names[1])
+    scorecard.setAbbrs(team_abbrs[0],team_abbrs[1])
     scorecard.setScore(scores[0],scores[1])
     scorecard.setDate(day)
 
@@ -81,7 +83,9 @@ def GetScores(day):
 
     scorecards = [ProcessCard(card,day) for card in cards]
 
-    return scorecards
+    scores = sorted(scorecards)
+
+    return scores
     
 def main():
     today = date(1969,4,20)
