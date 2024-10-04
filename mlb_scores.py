@@ -12,8 +12,6 @@ _score_url = "https://www.mlb.com/scores/"
 def GetScoreUrl(day):
     if not isinstance(day,date):
         raise TypeError('Expected Date object')
-    if day == date.today():
-        return _score_url
     return _score_url + str(day)
 
 def GetSite(day):
