@@ -1,3 +1,6 @@
+# Scrapes NBA scores from https://www.nba.come/games and returns them as a list of scorecard objects
+# Finds json of score data and parses it for informations
+
 import requests
 import warnings
 import json

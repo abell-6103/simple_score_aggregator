@@ -1,3 +1,6 @@
+# Scrapes NFL scores from https://www.sports.yahoo.com/nfl/scoreboard and returns them as a list of scorecard objects
+# Finds json of score data and parses it for information
+
 import requests
 import warnings
 import json

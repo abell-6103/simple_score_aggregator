@@ -1,3 +1,6 @@
+# Scrapes MLB scores from https://www.mlb.com/scores and returns them as a list of scorecard objects
+# Finds scorecard html elements and finds information contained within them
+
 import requests
 import warnings
 from bs4 import BeautifulSoup, Tag
@@ -9,6 +12,8 @@ _score_url = "https://www.mlb.com/scores/"
 def GetScoreUrl(day):
     if not isinstance(day,date):
         raise TypeError('Expected Date object')
+    if day == date.today():
+        return _score_url
     return _score_url + str(day)
 
 def GetSite(day):
