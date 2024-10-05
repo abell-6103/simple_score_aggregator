@@ -32,75 +32,102 @@ class ScoreLoader:
     def _timeSinceNFLLastLoad(self):
         return time() - self.last_nfl_load_time
 
-    def GetMLBScores(self,day):
-        if not isinstance(day,date):
+    def GetMLBScores(self,day,default = False):
+        if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
         if self._timeSinceMLBLastLoad() < self.requests_per_minute / 60:
             try:
-                return self.mlb_scores[day]
+                if default:
+                    return self.mlb_scores[0]
+                else:
+                    return self.mlb_scores[day]
             except KeyError:
                 wait_time = self.requests_per_minute / 60 - self._timeSinceMLBLastLoad()
                 sleep(wait_time)
-                scores =  _getMLBScores(day)
-                self.mlb_scores[day] = scores
+                scores =  _getMLBScores(day,default)
+                if default:
+                    self.mlb_scores[0] = scores
+                else:
+                    self.mlb_scores[day] = scores
                 self.last_mlb_load_time = time()
                 return scores
         else:
-            scores =  _getMLBScores(day)
-            self.mlb_scores[day] = scores
+            scores =  _getMLBScores(day,default)
+            if default:
+                self.mlb_scores[0] = scores
+            else:
+                self.mlb_scores[day] = scores
             self.last_mlb_load_time = time()
             return scores
 
-    def GetNFLScores(self,day):
-        if not isinstance(day,date):
+    def GetNFLScores(self,day,default = False):
+        if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
         if self._timeSinceNFLLastLoad() < self.requests_per_minute / 60:
             try:
-                return self.nfl_scores[day]
+                if default:
+                    return self.nfl_scores[0]
+                else:
+                    return self.nfl_scores[day]
             except KeyError:
                 wait_time = self.requests_per_minute / 60 - self._timeSinceNFLLastLoad()
                 sleep(wait_time)
-                scores =  _getNFLScores(day)
-                self.nfl_scores[day] = scores
+                scores =  _getNFLScores(day,default=default)
+                if default:
+                    self.nfl_scores[0] = scores
+                else:
+                    self.nfl_scores[day] = scores
                 self.last_nfl_load_time = time()
                 return scores
         else:
-            scores =  _getNFLScores(day)
-            self.nfl_scores[day] = scores
+            scores =  _getNFLScores(day,default=default)
+            if default:
+                self.nfl_scores[0] = scores
+            else:
+                self.nfl_scores[day] = scores
             self.last_nfl_load_time = time()
             return scores        
 
-    def GetNBAScores(self,day):
-        if not isinstance(day,date):
+    def GetNBAScores(self,day,default = False):
+        if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
         if self._timeSinceNBALastLoad() < self.requests_per_minute / 60:
             try:
-                return self.nba_scores[day]
+                if default:
+                    return self.nba_scores[0]
+                else:
+                    return self.nba_scores[day]
             except KeyError:
                 wait_time = self.requests_per_minute / 60 - self._timeSinceNBALastLoad()
                 sleep(wait_time)
-                scores =  _getNBAScores(day)
-                self.nba_scores[day] = scores
+                scores =  _getNBAScores(day,default)
+                if default:
+                    self.nba_scores[0] = scores
+                else:
+                    self.nba_scores[day] = scores
                 self.last_nba_load_time = time()
                 return scores
         else:
-            scores =  _getNBAScores(day)
-            self.nba_scores[day] = scores
+            scores =  _getNBAScores(day,default)
+            if default:
+                self.nba_scores[0] = scores
+            else:
+                self.nba_scores[day] = scores
             self.last_nba_load_time = time()
             return scores
         
-    def LoadAllScores(self,day):
-        if not isinstance(day,date):
+    def LoadAllScores(self,day,default = False):
+        if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
         scoreboard = {
             'scores' : {
-                'mlb' : self.GetMLBScores(day),
-                'nba' : self.GetNBAScores(day),
-                'nfl' : self.GetNFLScores(day)
+                'mlb' : self.GetMLBScores(day,default),
+                'nba' : self.GetNBAScores(day,default),
+                'nfl' : self.GetNFLScores(day,default)
             },
             'date' : day
         }

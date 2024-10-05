@@ -10,20 +10,23 @@ from scorecard import Scorecard
 
 _score_url = 'https://www.nba.com/games?date='
 
-def GetScoreUrl(day):
+def GetScoreUrl(day,default = False):
+    if default:
+        return 'https://www.nba.com/games'
+    
     if not isinstance(day,date):
         raise TypeError('Expected Date object')
     return _score_url + str(day)
 
-def GetSite(day):
-    score_url = GetScoreUrl(day)
+def GetSite(day,default = False):
+    score_url = GetScoreUrl(day,default)
     data = requests.get(score_url)
     if data.status_code != 200:
         data.raise_for_status()
     return data
 
-def GetSoup(day):
-    scores_site = GetSite(day)
+def GetSoup(day,default = False):
+    scores_site = GetSite(day,default)
     if scores_site is None:
         return None
     return BeautifulSoup(scores_site.text,'html.parser')
@@ -64,12 +67,15 @@ def ProcessCard(card,day):
     scorecard.setNames(team_names[0],team_names[1])
     scorecard.setAbbrs(team_abbrs[0],team_abbrs[1])
     scorecard.setScore(scores[0],scores[1])
-    scorecard.setDate(day)
+    try:
+        scorecard.setDate(day)
+    except TypeError:
+        pass
 
     return scorecard
 
-def GetScores(day):
-    soup = GetSoup(day)
+def GetScores(day,default = False):
+    soup = GetSoup(day,default)
     if soup is None:
         warnings.warn('NBA scores site did not properly load')
         return []

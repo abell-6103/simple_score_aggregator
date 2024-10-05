@@ -19,7 +19,10 @@ def GetYahooUrl(week):
 
     return f'https://sports.yahoo.com/nfl/scoreboard/?confId=&dateRange={week_num}&schedState={season_type}&scoreboardSeason={season}'
 
-def GetScoreUrl(day,year_override = False):
+def GetScoreUrl(day,year_override = False,default = False):
+    if default:
+        return 'https://sports.yahoo.com/nfl/scoreboard/'
+    
     if not isinstance(day,date):
         raise TypeError('Expected Date object')
     week = weeks.FindNearestWeek(day,year_override)
@@ -27,8 +30,8 @@ def GetScoreUrl(day,year_override = False):
         return None
     return GetYahooUrl(week)
 
-def GetSite(day,year_override = False):
-    score_url = GetScoreUrl(day,year_override)
+def GetSite(day,year_override = False,default = False):
+    score_url = GetScoreUrl(day,year_override,default)
     if score_url is None:
         return None
     data = requests.get(score_url)
@@ -36,8 +39,8 @@ def GetSite(day,year_override = False):
         data.raise_for_status()
     return data
 
-def GetSoup(day,year_override = False):
-    scores_site = GetSite(day,year_override)
+def GetSoup(day,year_override = False,default = False):
+    scores_site = GetSite(day,year_override,default)
     if scores_site is None:
         return None
     return BeautifulSoup(scores_site.text,'html.parser')
@@ -80,8 +83,13 @@ def GetData(soup):
 
     return details
 
-def GetTeamDict(TeamsStore,season):
+def GetTeamDict(TeamsStore,week,default = False):
     teams = {}
+
+    if isinstance(week,weeks.NFLWeek):
+        season = week.season
+    elif not default:
+        raise TypeError('Expected NFLWeek object')
 
     teams_data = TeamsStore['teams']
     for team_id in teams_data:
@@ -91,25 +99,26 @@ def GetTeamDict(TeamsStore,season):
         last_name = team_data['last_name']
         abbr = team_data['abbr']
 
-        if last_name == 'Commanders' and season < 2020:
-            last_name = 'Redskins'
-        elif last_name == 'Commanders' and season < 2022:
-            last_name = 'Washington Football Team'
+        if not default:
+            if last_name == 'Commanders' and season < 2020:
+                last_name = 'Redskins'
+            elif last_name == 'Commanders' and season < 2022:
+                last_name = 'Washington Football Team'
 
-        if abbr == 'LV' and season < 2020:
-            abbr = 'OAK'
-        
-        if abbr == 'LA' and season < 2016:
-            abbr = 'STL'
+            if abbr == 'LV' and season < 2020:
+                abbr = 'OAK'
+            
+            if abbr == 'LA' and season < 2016:
+                abbr = 'STL'
 
-        if abbr == 'LAC' and season < 2017:
-            abbr = 'SD'
+            if abbr == 'LAC' and season < 2017:
+                abbr = 'SD'
 
         teams[team_id] = [last_name,abbr]
 
     return teams
 
-def GetScorecards(GamesStore,TeamsDict,week):
+def GetScorecards(GamesStore,TeamsDict,week,default = False):
     games = GamesStore['games']
     
     scorecards = []
@@ -119,7 +128,7 @@ def GetScorecards(GamesStore,TeamsDict,week):
         
         game_date_str = (str.split(game_tag,'.')[2])[0:8]
         game_day = date(int(game_date_str[0:4]),int(game_date_str[4:6]),int(game_date_str[6:8]))
-        if weeks.FindNearestWeek(game_day) != week:
+        if (not default) and (weeks.FindNearestWeek(game_day) != week):
             continue
 
         game = games[game_tag]
@@ -147,16 +156,19 @@ def GetScorecards(GamesStore,TeamsDict,week):
     return scorecards
 
 
-def GetScores(day,year_override = False):
-    try:
-        week = weeks.FindNearestWeek(day)
-    except ValueError:
-        return []
-    
-    if week is None:
-        return []
+def GetScores(day,year_override = False,default = False):
+    if not default:
+        try:
+            week = weeks.FindNearestWeek(day)
+        except ValueError:
+            return []
+        
+        if week is None:
+            return []
+    else:
+        week = None
 
-    soup = GetSoup(day,year_override)
+    soup = GetSoup(day,year_override,default)
     if soup is None:
         warnings.warn('NFL scores site did not properly load')
         return []
@@ -176,13 +188,14 @@ def GetScores(day,year_override = False):
         return []
     
     TeamsStore = data['context']['dispatcher']['stores']['TeamsStore']
-    TeamsDict = GetTeamDict(TeamsStore,week.season)
+    TeamsDict = GetTeamDict(TeamsStore,week,default)
+
     if len(TeamsDict) < 1:
         warnings.warn('Could not load teams')
         return []
 
     GamesStore = data['context']['dispatcher']['stores']['GamesStore']
-    scorecards = GetScorecards(GamesStore,TeamsDict,week)
+    scorecards = GetScorecards(GamesStore,TeamsDict,week,default)
     
     scores = sorted(scorecards,key= lambda x: x.date)
 
