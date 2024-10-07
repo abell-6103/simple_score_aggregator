@@ -52,11 +52,12 @@ def NoScores(scorecard_json):
         return False
     return True
 
-def ProcessCard(card,day):
+def ProcessCard(card):
     data = card['cardData']
     home_team = data['homeTeam']
     away_team = data['awayTeam']
     status_num = data['gameStatus']
+    game_time = data['gameTimeEastern']
 
     state = data['gameStatusText']
     team_names = [away_team['teamName'],home_team['teamName']]
@@ -66,15 +67,15 @@ def ProcessCard(card,day):
     else:
         scores = [away_team['score'],home_team['score']]
 
+    date_text = str.split(game_time,'T')[0]
+    date_parts = [int(part) for part in str.split(date_text,'-')]
+
     scorecard = Scorecard()
     scorecard.setState(state)
     scorecard.setNames(team_names[0],team_names[1])
     scorecard.setAbbrs(team_abbrs[0],team_abbrs[1])
     scorecard.setScore(scores[0],scores[1])
-    try:
-        scorecard.setDate(day)
-    except TypeError:
-        pass
+    scorecard.setDate(date(date_parts[0],date_parts[1],date_parts[2]))
 
     return scorecard
 
@@ -94,7 +95,7 @@ def GetScores(day,default = False):
 
     cards = scorecard_json['props']['pageProps']['gameCardFeed']['modules'][0]['cards']
 
-    scorecards = [ProcessCard(card,day) for card in cards]
+    scorecards = [ProcessCard(card) for card in cards]
 
     scores = sorted(scorecards)
 

@@ -93,6 +93,20 @@ def GetScores(day,default = False):
     if no_scores:
         return []
     
+    meta_elements = soup.find_all('meta')
+
+    if default:
+        date_text = None
+        for meta in meta_elements:
+            if meta.get('name') == 'serverTime':
+                date_text = meta.get('content')
+                break
+        
+        if date_text is not None:
+            date_str = str.split(date_text,'T')[0]
+            date_elements = [int(element) for element in str.split(date_str,'-')]
+            day = date(date_elements[0],date_elements[1],date_elements[2])
+
     scorecard_elements = gameContainer.find_all('div',class_ = 'ScoresGamestyle__ExpandedScoresGameWrapper-sc-7t80if-0 ScoresGamestyle__DesktopScoresGameWrapper-sc-7t80if-1 gPLsYH')
     scorecards = [GetScorecardFromElement(element,day) for element in scorecard_elements]
 
