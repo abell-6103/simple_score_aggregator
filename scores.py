@@ -9,9 +9,10 @@ from scorecard import Scorecard
 
 from datetime import date
 from time import time, sleep
+import pandas as pd
 import json
 
-class DumpError(LookupError):
+class LoadError(LookupError):
     pass
 
 class ScoreLoader:
@@ -140,9 +141,25 @@ class ScoreLoader:
 
         return scoreboard
     
+    def GetScoreDataframe(self):
+        if len(self.loaded_scores) <= 0:
+            raise LoadError('No loaded scores')
+        
+        ds_list = []
+        for league, scores in self.loaded_scores['scores'].items():
+            for score in scores:
+                if not isinstance(score, Scorecard):
+                    continue
+                score_ds = score.getSeries()
+                score_ds['league'] = str.upper(league)
+                ds_list.append(score_ds)
+        
+        df = pd.DataFrame(ds_list)
+        return df
+
     def DumpLoadedScores(self,indent=0):
         if len(self.loaded_scores) <= 0:
-            raise DumpError('No loaded scores')
+            raise LoadError('No loaded scores')
         
         dump_scoreboard = {
             'scores' : {

@@ -4,6 +4,7 @@ Scorecard contains team names, abbreviations, scores, game status, and the date 
 """
 
 from datetime import date
+import pandas as pd
 
 class Scorecard:
     def __init__(self):
@@ -93,4 +94,7 @@ class Scorecard:
             'game_date' : str(self.date)
         }
     
-    
+    def getSeries(self):
+        score_dict = self.getDict()
+        ds = pd.Series(score_dict,index=score_dict.keys())
+        return ds
