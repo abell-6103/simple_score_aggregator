@@ -1,5 +1,9 @@
-# Scrapes NBA scores from https://www.nba.come/games and returns them as a list of scorecard objects
-# Finds json of score data and parses it for informations
+"""
+Library that enables the collection of NBA score info from https://www.nba.com/games and returns it as a list of scorecard objects.
+Information collected via data contained in the __NEXT_DATA__ script on the scores page.
+
+Scores accessible from the 1946-47 BAA season onward. (Does not contain data for the ABA)
+"""
 
 import requests
 import warnings

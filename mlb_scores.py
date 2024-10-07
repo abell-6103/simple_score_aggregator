@@ -1,5 +1,9 @@
-# Scrapes MLB scores from https://www.mlb.com/scores and returns them as a list of scorecard objects
-# Finds scorecard html elements and finds information contained within them
+"""
+Library that enables the collection of MLB score info from https://www.mlb.com/scores/ and returns it as a list of scorecard objects.
+Information collected via data contained in html game display elements.
+
+Scores accessible from the 1901 MLB season onward.
+"""
 
 import requests
 import warnings

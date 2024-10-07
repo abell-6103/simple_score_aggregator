@@ -1,3 +1,9 @@
+"""
+Library that enables the collection of NFL score info from https://www.sports.yahoo.com/nfl/scoreboard/ and returns it as a list of scorecard objects.
+Information collected via data contained in the Data script on the scores page.
+
+Scores accessible from the 2013 NFL season onward.
+"""
 # Scrapes NFL scores from https://www.sports.yahoo.com/nfl/scoreboard and returns them as a list of scorecard objects
 # Finds json of score data and parses it for information
 

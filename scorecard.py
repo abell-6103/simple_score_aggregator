@@ -1,3 +1,8 @@
+"""
+Contains the Scorecard class which stores the data of the score from any given game.
+Scorecard contains team names, abbreviations, scores, game status, and the date the game was played. Some or all fields may be set to None.
+"""
+
 from datetime import date
 
 class Scorecard:

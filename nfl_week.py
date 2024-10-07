@@ -1,3 +1,8 @@
+"""
+Contains classes and methods relevant to getting and storing weeks during an NFL season.
+PLEASE NOTE that using any season not between and including 2013 and 2024 will results in a ValueError.
+"""
+
 from datetime import date
 from enum import Enum,auto
 from math import floor
