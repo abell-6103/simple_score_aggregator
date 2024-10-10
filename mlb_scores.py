@@ -6,8 +6,7 @@ Scores accessible from the 1901 MLB season onward, though older team names may n
 """
 
 import requests
-from datetime import date, timedelta
-from time import time,sleep
+from datetime import date
 from scorecard import Scorecard
 
 def GetScoreUrl(startDate,endDate,default = False):
