@@ -102,7 +102,7 @@ def GetScores(day,default = False):
     return scores
     
 def main():
-    today = date(1969,4,20)
+    today = date.today()
     scores = GetScores(today)
     for score in scores:
         print(score,end='\n\n')

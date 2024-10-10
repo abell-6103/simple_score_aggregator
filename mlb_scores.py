@@ -1,122 +1,140 @@
 """
-Library that enables the collection of MLB score info from https://www.mlb.com/scores/ and returns it as a list of scorecard objects.
-Information collected via data contained in html game display elements.
+Library that enables the collection of MLB score info from https://statsapi.mlb.com/api/ and returns it as a list of scorecard objects.
+Information collected via MLB's official stats api.
 
-Scores accessible from the 1901 MLB season onward.
+Scores accessible from the 1901 MLB season onward, though older team names may not be accurate.
 """
 
 import requests
-import warnings
-from bs4 import BeautifulSoup, Tag
-from datetime import date
+from datetime import date, timedelta
+from time import time,sleep
 from scorecard import Scorecard
 
-_score_url = "https://www.mlb.com/scores/"
+def GetScoreUrl(startDate,endDate,default = False):
+    if startDate is None and endDate is None:
+        default = True
 
-def GetScoreUrl(day,default = False):
+    if (not default) and (not (isinstance(startDate,date) and isinstance(endDate,date))):
+        raise TypeError('One or more date entries are invalid data types (datetime.date is valid)')
+
     if default:
-        return _score_url
+        return 'https://statsapi.mlb.com/api/v1/schedule?sportId=1'
     
+    return f'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate={str(startDate)}&endDate={str(endDate)}'
+
+def LoadScoreJson(startDate,endDate,default = False):
+    url = GetScoreUrl(startDate,endDate,default)
+    r = requests.get(url)
+    if r.status_code != 200:
+        raise requests.HTTPError('Failed to load scores')
+    return r.json()
+
+def LoadTeams():
+    r = requests.get('https://statsapi.mlb.com/api/v1/teams?sportId=1')
+    if r.status_code != 200:
+        raise requests.HTTPError('Failed to load teams')
+    teams_json = r.json()
+    teams_list = teams_json['teams']
+
+    teams = {}
+
+    for team in teams_list:
+        id = team['id']
+        try:
+            name = team['clubName']
+        except KeyError:
+            name = team['teamName']
+        abbr = team['abbreviation']
+        teams[id] = name, abbr
+
+    return teams
+
+def ConvertToScorecard(game,team_dict,ignoreLive = True):
+    teams = game['teams']
+
+    away_team = teams['away']
+    away_id = away_team['team']['id']
+    try:
+        away_name, away_abbr = team_dict[away_id]
+    except KeyError:
+        away_name, away_abbr = 'TBD','TBD'
+
+    try:
+        away_score = away_team['score']
+    except KeyError:
+        away_score = None
+
+    home_team = teams['home']
+    home_id = home_team['team']['id']
+    try:
+        home_name, home_abbr = team_dict[home_id]
+    except KeyError:
+        home_name, home_abbr = 'TBD','TBD'
+
+    try:
+        home_score = home_team['score']
+    except KeyError:
+        home_score = None
+
+    official_date_text = game['officialDate']
+    official_date_parts = [int(part) for part in str.split(official_date_text,'-')]
+    official_date = date(official_date_parts[0],official_date_parts[1],official_date_parts[2])
+
+    game_date_text = game['gameDate']
+    game_time_text = game_date_text[11:18]
+    game_time_hour_raw = (int(str.split(game_time_text,':')[0]) - 4) % 24
+    game_time_minute = int(str.split(game_time_text,':')[1])
+    if game_time_hour_raw > 12:
+        game_time = f'{game_time_hour_raw - 12}:{game_time_minute:02d} pm ET'
+    elif game_time_hour_raw == 0:
+        game_time = f'12:{game_time_minute:02d} am ET'
+    else:
+        game_time = f'{game_time_hour_raw}:{game_time_minute:02d} am ET'
+
+    abstract_status = game['status']['abstractGameState']
+    status_text = game['status']['detailedState']
+    if game['status']['startTimeTBD'] and abstract_status == 'Preview':
+        status_text = 'TBD'
+    elif abstract_status == 'Preview':
+        status_text = game_time
+    elif abstract_status == 'Live' and not ignoreLive:
+        base_link = 'https://statsapi.mlb.com'
+        live_link = game['link']
+        game_json = requests.get(f'{base_link}{live_link}').json()
+        linescore = game_json['liveData']['linescore']
+        status_text = f'{str.upper(linescore["inningState"][0:3])} {linescore["currentInning"]}'
+
+    card = Scorecard()
+    card.setAbbrs(away_abbr,home_abbr)
+    card.setNames(away_name,home_name)
+    card.setScore(away_score,home_score)
+    card.setState(status_text)
+    card.setDate(official_date)
+
+    return card
+
+def GetScores(startDate,endDate,default = False,ignoreLive = True):
+    score_json = LoadScoreJson(startDate,endDate,default)
+    team_dict = LoadTeams()
+
+    dates = score_json['dates']
+    scorecards = []
+
+    for date in dates:
+        scores = [ConvertToScorecard(game,team_dict,ignoreLive) for game in date['games']]
+        scorecards += scores
+
+    return scorecards
+
+def GetScoresOnDay(day,default = False, ignoreLive = False):
     if not isinstance(day,date):
-        raise TypeError('Expected Date object')
-    return _score_url + str(day)
-
-def GetSite(day,default = False):
-    score_url = GetScoreUrl(day,default)
-    data = requests.get(score_url)
-    if data.status_code != 200:
-        data.raise_for_status()
-    return data
-
-def GetSoup(day,default = False):
-    scores_site = GetSite(day,default)
-    if scores_site is None:
-        return None
-    return BeautifulSoup(scores_site.text,'html.parser')
-
-def ContainerIsEmpty(soup):
-    if not (isinstance(soup,BeautifulSoup) or isinstance(soup,Tag)):
-        raise TypeError('Expected BeautifulSoup or Tag object')
-    EmptyCollectionDiv = soup.find('div',class_ = 'EmptyCollectionstyle__EmptyWrapper-sc-4fquet-0 hAoHOT')
-    if EmptyCollectionDiv is None:
-        return False
-    return True
-
-def GetScorecardFromElement(element,day):
-    if not (isinstance(element,BeautifulSoup) or isinstance(element,Tag)):
-        raise TypeError('Expected BeautifulSoup or Tag object')
+        raise TypeError('Expected datetime.date object')
     
-    state_element = element.find('div',class_ = 'StatusLayerstyle__StatusLayerValue-sc-1s2c2o8-2')
-    team_name_elements = element.find_all('div',class_ = 'TeamWrappersstyle__DesktopTeamWrapper-sc-uqs6qh-0 fdaoCu')
-    team_abbr_elements = element.find_all('div',class_ = 'TeamWrappersstyle__MobileTeamWrapper-sc-uqs6qh-1 jXnGyx')
-    scoreboard_element = element.find('table',class_ = 'tablestyle__StyledTable-sc-wsl6eq-0 fxhlOg')
-
-    state = None
-    if state_element is not None:
-        state = str.split(state_element.text,'\u00a0')[0]
-
-    team_names = [x.text for x in team_name_elements]
-    team_abbrs = [x.text for x in team_abbr_elements]
-
-    try:
-        scoreboard_rows = scoreboard_element.find('tbody').find_all('tr')
-        scores = [int(row.find('td').text) for row in scoreboard_rows]
-    except AttributeError:
-        scores = [None,None]
-    except ValueError:
-        scores = [None,None]
-
-    scorecard = Scorecard()
-    scorecard.setState(state)
-    scorecard.setNames(team_names[0],team_names[1])
-    scorecard.setAbbrs(team_abbrs[0],team_abbrs[1])
-    scorecard.setScore(scores[0],scores[1])
-    try:
-        scorecard.setDate(day)
-    except TypeError:
-        pass
-
-    return scorecard
-
-def GetScores(day,default = False):
-    soup = GetSoup(day,default)
-    if soup is None:
-        warnings.warn('MLB scores site did not properly load')
-        return []
-    
-    gameContainer = soup.find('section',class_ = 'SnSstyle__GameCardsWrapper-sc-1m2zl7j-0')
-    if gameContainer is None:
-        warnings.warn('Score container could not be found')
-        return []
-
-    no_scores = ContainerIsEmpty(gameContainer)
-    if no_scores:
-        return []
-    
-    meta_elements = soup.find_all('meta')
-
-    if default:
-        date_text = None
-        for meta in meta_elements:
-            if meta.get('name') == 'serverTime':
-                date_text = meta.get('content')
-                break
-        
-        if date_text is not None:
-            date_str = str.split(date_text,'T')[0]
-            date_elements = [int(element) for element in str.split(date_str,'-')]
-            day = date(date_elements[0],date_elements[1],date_elements[2])
-
-    scorecard_elements = gameContainer.find_all('div',class_ = 'ScoresGamestyle__ExpandedScoresGameWrapper-sc-7t80if-0 ScoresGamestyle__DesktopScoresGameWrapper-sc-7t80if-1 gPLsYH')
-    scorecards = [GetScorecardFromElement(element,day) for element in scorecard_elements]
-
-    scores = sorted(scorecards)
-
-    return scores
+    return GetScores(day,day,default,ignoreLive)
 
 def main():
     today = date.today()
-    scores = GetScores(today)
+    scores = GetScoresOnDay(today)
     for score in scores:
         print(score,end='\n\n')
 

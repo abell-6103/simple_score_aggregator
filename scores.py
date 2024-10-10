@@ -2,7 +2,7 @@
 The main library for the score aggregator. Contains the ScoreLoader class, which is responsible for loading scores, doing so in a timed manner, and saving scores to files.
 '''
 
-from mlb_scores import GetScores as _getMLBScores
+from mlb_scores import GetScoresOnDay as _getMLBScores
 from nba_scores import GetScores as _getNBAScores
 from nfl_scores import GetScores as _getNFLScores
 from scorecard import Scorecard
