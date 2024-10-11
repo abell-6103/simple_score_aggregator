@@ -1,6 +1,6 @@
 """
 Contains classes and methods relevant to getting and storing weeks during an NFL season.
-PLEASE NOTE that using any season not between and including 2013 and 2024 will results in a ValueError.
+PLEASE NOTE that using any season not between and including 2000 and 2024 will results in a ValueError.
 """
 
 from datetime import date
@@ -102,8 +102,8 @@ def GetPreseasonStart(year,year_override = False):
     if not isinstance(year,int):
         raise TypeError('Year must be an integer value')
     
-    if year < 2013 and not year_override:
-        raise ValueError('Year cannot be earlier than 2013')
+    if year < 2000 and not year_override:
+        raise ValueError('Year cannot be earlier than 2000')
     
     if year > 2024 and not year_override:
         raise ValueError('Year cannot be later than 2024')
@@ -119,8 +119,8 @@ def GetRegularSeasonStart(year,year_override = False):
     if not isinstance(year,int):
         raise TypeError('Year must be an integer value')
     
-    if year < 2013 and not year_override:
-        raise ValueError('Year cannot be earlier than 2013')
+    if year < 2000 and not year_override:
+        raise ValueError('Year cannot be earlier than 2000')
     
     if year > 2024 and not year_override:
         raise ValueError('Year cannot be later than 2024')
@@ -132,8 +132,8 @@ def GetPostseasonStart(year,year_override = False):
     if not isinstance(year,int):
         raise TypeError('Year must be an integer value')
     
-    if year < 2013 and not year_override:
-        raise ValueError('Year cannot be earlier than 2013')
+    if year < 2000 and not year_override:
+        raise ValueError('Year cannot be earlier than 2000')
     
     if year > 2024 and not year_override:
         raise ValueError('Year cannot be later than 2024')
@@ -149,8 +149,8 @@ def GetPostseasonStart(year,year_override = False):
     return date(d_year,month,day)
 
 def GetRegularSeasonLength(year,year_override = False):
-    if year < 2013 and not year_override:
-        raise ValueError('Year cannot be earlier than 2013')
+    if year < 2000 and not year_override:
+        raise ValueError('Year cannot be earlier than 2000')
     elif 2000 <= year and year < 2021:
         return 17
     elif 2021 <= year and (year < 2025 or year_override):
@@ -199,7 +199,7 @@ class NFLWeek:
     def __init__(self):
         self.week_num = 1
         self.week_type = WeekType.REGULAR
-        self.season = 2013
+        self.season = 2000
 
     def __repr__(self):
         season_type_list = [None,'Preseason','Regular Season','Postseason']
@@ -240,7 +240,7 @@ class NFLWeek:
         if not isinstance(year,int):
             raise TypeError('Year can only be an integer value')
         
-        if year < 2013 and not year_override:
-            raise ValueError('Year cannot be earlier than 2013')
+        if year < 2000 and not year_override:
+            raise ValueError('Year cannot be earlier than 2000')
         
         self.season = year
