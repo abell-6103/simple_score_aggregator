@@ -64,7 +64,7 @@ def ProcessCompetition(competition):
         display_clock = status['displayClock']
         status_text = f'Q{quarter} {display_clock}'
     elif status_type['id'] == "22":
-        status_text = f"End Q{quarter}"
+        status_text = f"END Q{quarter}"
     else:
         status_text = status['type']['detail']
 
