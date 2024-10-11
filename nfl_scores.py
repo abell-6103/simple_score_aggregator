@@ -36,7 +36,7 @@ def ProcessCompetition(competition):
     elif hour == 0:
         time_text = f"12:{minute:02d} am ET"
     else:
-        time_text = f"{hour:02d}:{minute:02d} am ET:"
+        time_text = f"{hour:02d}:{minute:02d} am ET"
     
     # Construct date
 

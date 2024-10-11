@@ -126,7 +126,7 @@ def GetScores(startDate,endDate,default = False,ignoreLive = True):
     return scorecards
 
 def GetScoresOnDay(day,default = False, ignoreLive = False):
-    if not isinstance(day,date):
+    if (not default) and (not isinstance(day,date)):
         raise TypeError('Expected datetime.date object')
     
     return GetScores(day,day,default,ignoreLive)
