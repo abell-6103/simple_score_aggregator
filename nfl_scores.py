@@ -8,7 +8,7 @@ Scores accessible from the 2000 NFL season onward.
 """
 
 import requests
-from datetime import date
+from datetime import date, timedelta
 from scorecard import Scorecard
 from nfl_week import FindNearestWeek
 
@@ -42,9 +42,11 @@ def ProcessCompetition(competition):
 
     date_raw = date_raw_parts[0]
     day_parts = [int(num) for num in str.split(date_raw,'-')]
-    if date_lowered:
-        day_parts[2] -= 1
     game_date = date(day_parts[0],day_parts[1],day_parts[2])
+    if date_lowered:
+        d = timedelta(days=1)
+        game_date -= d
+    
 
     # Construct status
 
