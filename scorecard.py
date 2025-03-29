@@ -25,15 +25,22 @@ class Scorecard:
         score_str = ""
 
         if self.abbr_team1 is not None and self.abbr_team2 is not None:
-            score_str += f'{self.abbr_team1} @ {self.abbr_team2}'
+            score_str += f'| {self.abbr_team1}'
+            if self.score_team1 is not None and self.score_team2 is not None:
+                score_str += f' {self.score_team1} - {self.score_team2} {self.abbr_team2}'
+            else:
+                score_str += f' @ {self.abbr_team2}'
         elif self.name_team1 is not None and self.name_team2 is not None:
-            score_str += f'{self.name_team1} @ {self.name_team2}'
+            score_str += f'| {self.name_team1}'
+            if self.score_team1 is not None and self.score_team2 is not None:
+                score_str += f' {self.score_team1} - {self.score_team2} {self.name_team2}'
+            else:
+                score_str += f' @ {self.name_team2}'
         
-        if self.score_team1 is not None and self.score_team2 is not None:
-            score_str += f' {self.score_team1}-{self.score_team2}'
+        
         
         if self.game_state is not None:
-            score_str += f' {self.game_state}'
+            score_str += f' | {self.game_state}'
         
         if self.date is not None:
             score_str += f' ({str(self.date)})'

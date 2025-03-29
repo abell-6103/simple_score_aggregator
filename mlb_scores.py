@@ -91,22 +91,27 @@ def ConvertToScorecard(game,team_dict,ignoreLive = True):
         game_time = f'{game_time_hour_raw}:{game_time_minute:02d} am ET'
 
     abstract_status = game['status']['abstractGameState']
+    coded_state = game['status']['codedGameState']
     status_text = game['status']['detailedState']
     if game['status']['startTimeTBD'] and abstract_status == 'Preview':
         status_text = 'TBD'
     elif abstract_status == 'Preview':
         status_text = game_time
-    elif abstract_status == 'Live' and not ignoreLive:
+    elif abstract_status == 'Live' and not ignoreLive and coded_state != 'I':
+        status_text += f' {game_time}'
+    elif abstract_status == 'Live' and not ignoreLive and coded_state == 'I':
         base_link = 'https://statsapi.mlb.com'
         live_link = game['link']
         game_json = requests.get(f'{base_link}{live_link}').json()
         linescore = game_json['liveData']['linescore']
         status_text = f'{str.upper(linescore["inningState"][0:3])} {linescore["currentInning"]}'
 
+    game_started = coded_state == 'I' or coded_state == 'F'
+
     card = Scorecard()
     card.setAbbrs(away_abbr,home_abbr)
     card.setNames(away_name,home_name)
-    card.setScore(away_score,home_score)
+    if game_started: card.setScore(away_score,home_score)
     card.setState(status_text)
     card.setDate(official_date)
 
