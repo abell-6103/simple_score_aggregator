@@ -9,7 +9,7 @@ from scorecard import Scorecard
 
 from datetime import date
 from time import time, sleep
-import pandas as pd
+
 import json
 
 class LoadError(LookupError):
@@ -154,8 +154,12 @@ class ScoreLoader:
                 score_ds['league'] = str.upper(league)
                 ds_list.append(score_ds)
         
-        df = pd.DataFrame(ds_list)
-        return df
+        try:
+            from pandas import DataFrame
+            df = DataFrame(ds_list)
+            return df
+        except ImportError as e:
+            raise e
 
     def DumpLoadedScores(self,indent=0):
         if len(self.loaded_scores) <= 0:
