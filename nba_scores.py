@@ -59,6 +59,17 @@ def ProcessCard(card):
     status_num = data['gameStatus']
     game_time = data['gameTimeEastern']
 
+    if home_team is None:
+        home_team = dict()
+        home_team['teamName'] = 'TBA'
+        home_team['teamTricode'] = 'TBA'
+        home_team['score'] = 0
+    if away_team is None:
+        away_team = dict()
+        away_team['teamName'] = 'TBA'
+        away_team['teamTricode'] = 'TBA'
+        away_team['score'] = 0
+
     state = data['gameStatusText']
     team_names = [away_team['teamName'],home_team['teamName']]
     team_abbrs = [away_team['teamTricode'],home_team['teamTricode']]
