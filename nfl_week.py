@@ -7,7 +7,7 @@ from datetime import date
 from enum import Enum,auto
 from math import floor
 
-_2024_season_ended = False
+_2025_season_ended = False
 
 _preseason_start_dates = {
     2000 : 3,
@@ -34,7 +34,8 @@ _preseason_start_dates = {
     2021 : 5,
     2022 : 4,
     2023 : 3,
-    2024 : 1
+    2024 : 1,
+    2025 : 31
 }
 
 _regular_season_start_dates = {
@@ -62,7 +63,8 @@ _regular_season_start_dates = {
     2021 : 8,
     2022 : 7,
     2023 : 6,
-    2024 : 4
+    2024 : 4,
+    2025 : 3
 }
 
 _postseason_start_dates = {
@@ -90,7 +92,8 @@ _postseason_start_dates = {
     2021 : 13,
     2022 : 12,
     2023 : 11,
-    2024 : 9
+    2024 : 9,
+    2025 : 8
 }
 
 class WeekType(Enum):
@@ -105,11 +108,11 @@ def GetPreseasonStart(year,year_override = False):
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     
-    if year > 2024 and not year_override:
-        raise ValueError('Year cannot be later than 2024')
+    if year > 2025 and not year_override:
+        raise ValueError('Year cannot be later than 2025')
 
     month = 8
-    if year in [2008,2014]:
+    if year in [2008,2014,2025]:
         month = 7
 
     day = _preseason_start_dates[year]
@@ -122,8 +125,8 @@ def GetRegularSeasonStart(year,year_override = False):
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     
-    if year > 2024 and not year_override:
-        raise ValueError('Year cannot be later than 2024')
+    if year > 2025 and not year_override:
+        raise ValueError('Year cannot be later than 2025')
     
     day = _regular_season_start_dates[year]
     return date(year,9,day)
@@ -135,8 +138,8 @@ def GetPostseasonStart(year,year_override = False):
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     
-    if year > 2024 and not year_override:
-        raise ValueError('Year cannot be later than 2024')
+    if year > 2025 and not year_override:
+        raise ValueError('Year cannot be later than 2025')
     
     month = 1
     d_year = year
@@ -153,12 +156,12 @@ def GetRegularSeasonLength(year,year_override = False):
         raise ValueError('Year cannot be earlier than 2000')
     elif 2000 <= year and year < 2021:
         return 17
-    elif 2021 <= year and (year < 2025 or year_override):
+    elif 2021 <= year and (year < 2026 or year_override):
         return 18
     elif year_override:
         raise ValueError(f'Season length for {year} is not defined')
     else:
-        raise ValueError('Year cannot be later than 2024')
+        raise ValueError('Year cannot be later than 2025')
 
 def FindNearestWeek(day,year_override = False):
     if not isinstance(day,date):
@@ -167,7 +170,7 @@ def FindNearestWeek(day,year_override = False):
     week_obj = NFLWeek()
 
     season = day.year
-    if (season == 2025 and not _2024_season_ended) or GetPreseasonStart(day.year,year_override) > day:
+    if (season == 2026 and not _2025_season_ended) or GetPreseasonStart(day.year,year_override) > day:
         season -= 1
     week_obj.SetSeason(season,year_override)
 
