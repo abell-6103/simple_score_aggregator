@@ -12,7 +12,7 @@ from datetime import date, timedelta
 from scorecard import Scorecard
 from nfl_week import FindNearestWeek
 
-def ProcessCompetition(competition):
+def ProcessCompetition(competition: dict) -> Scorecard:
     competitors = competition['competitors']
     status = competition['status']
     date_raw = competition['startDate']
@@ -100,7 +100,7 @@ def ProcessCompetition(competition):
     
     return score
 
-def ProcessEvents(events):
+def ProcessEvents(events: list) -> list[Scorecard]:
     scores = []
     for event in events:
         competitions = event['competitions']
@@ -109,12 +109,8 @@ def ProcessEvents(events):
 
     return scores
 
-def GetScores(day,default = False):
-    if (not default) and (not isinstance(day,date)):
-        raise TypeError('Expected datetime.date object')
-    
+def GetScores(day: date, default: bool = False) -> list[Scorecard]:
     scores = None
-
     base_url = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'
 
     if day == date.today() or default:
@@ -147,7 +143,7 @@ def GetScores(day,default = False):
 
     return scores
 
-def main():
+def main() -> None:
     today = date.today()
     scores = GetScores(today)
     for score in scores:

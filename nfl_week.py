@@ -101,10 +101,7 @@ class WeekType(Enum):
     REGULAR = 2
     POSTSEASON = 3
 
-def GetPreseasonStart(year,year_override = False):
-    if not isinstance(year,int):
-        raise TypeError('Year must be an integer value')
-    
+def GetPreseasonStart(year: int, year_override: bool = False) -> date:
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     
@@ -118,10 +115,7 @@ def GetPreseasonStart(year,year_override = False):
     day = _preseason_start_dates[year]
     return date(year,month,day)
 
-def GetRegularSeasonStart(year,year_override = False):
-    if not isinstance(year,int):
-        raise TypeError('Year must be an integer value')
-    
+def GetRegularSeasonStart(year: int, year_override: bool = False) -> date:
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     
@@ -131,10 +125,7 @@ def GetRegularSeasonStart(year,year_override = False):
     day = _regular_season_start_dates[year]
     return date(year,9,day)
 
-def GetPostseasonStart(year,year_override = False):
-    if not isinstance(year,int):
-        raise TypeError('Year must be an integer value')
-    
+def GetPostseasonStart(year: int, year_override: bool = False) -> date:
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     
@@ -151,7 +142,7 @@ def GetPostseasonStart(year,year_override = False):
     day = _postseason_start_dates[year]
     return date(d_year,month,day)
 
-def GetRegularSeasonLength(year,year_override = False):
+def GetRegularSeasonLength(year: int, year_override: bool = False) -> int:
     if year < 2000 and not year_override:
         raise ValueError('Year cannot be earlier than 2000')
     elif 2000 <= year and year < 2021:
@@ -163,10 +154,49 @@ def GetRegularSeasonLength(year,year_override = False):
     else:
         raise ValueError('Year cannot be later than 2025')
 
-def FindNearestWeek(day,year_override = False):
-    if not isinstance(day,date):
-        raise TypeError('Expected date object')
+class NFLWeek:
+    def __init__(self) -> None:
+        self.week_num = 1
+        self.week_type = WeekType.REGULAR
+        self.season = 2000
+
+    def __repr__(self) -> str:
+        season_type_list = [None,'Preseason','Regular Season','Postseason']
+        season_type_index = self.week_type.value
+        return f'Week {self.week_num} {season_type_list[season_type_index]} {self.season}'
+
+    def __eq__(self, other: 'NFLWeek') -> bool:
+        if not isinstance(other,NFLWeek):
+            raise TypeError('Cannot compare NFLWeek to non-NFLWeek object')
+        
+        return self.week_num == other.week_num and self.week_type == other.week_type and self.season == other.season
     
+    def __ne__(self, other: 'NFLWeek') -> bool:
+        return not (self == other)
+
+    def __int__(self) -> int:
+        season_length = GetRegularSeasonLength(self.season)
+
+        if self.week_type == WeekType.PRESEASON:
+            return 0
+        
+        if self.week_type == WeekType.REGULAR:
+            return self.week_num
+        
+        return season_length + self.week_num
+
+    def SetWeekNum(self, num: int) -> None:
+        self.week_num = num
+
+    def SetWeekType(self, type: WeekType) -> None:
+        self.week_type = type
+    
+    def SetSeason(self, year: int, year_override: bool = False) -> None:
+        if year < 2000 and not year_override:
+            raise ValueError('Year cannot be earlier than 2000')
+        self.season = year
+
+def FindNearestWeek(day: date, year_override: bool = False) -> NFLWeek:
     week_obj = NFLWeek()
 
     season = day.year
@@ -196,54 +226,3 @@ def FindNearestWeek(day,year_override = False):
     week_obj.SetWeekNum(week)
 
     return week_obj
-        
-
-class NFLWeek:
-    def __init__(self):
-        self.week_num = 1
-        self.week_type = WeekType.REGULAR
-        self.season = 2000
-
-    def __repr__(self):
-        season_type_list = [None,'Preseason','Regular Season','Postseason']
-        season_type_index = self.week_type.value
-        return f'Week {self.week_num} {season_type_list[season_type_index]} {self.season}'
-
-    def __eq__(self,other):
-        if not isinstance(other,NFLWeek):
-            raise TypeError('Cannot compare NFLWeek to non-NFLWeek object')
-        
-        return self.week_num == other.week_num and self.week_type == other.week_type and self.season == other.season
-    
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __int__(self):
-        season_length = GetRegularSeasonLength(self.season)
-
-        if self.week_type == WeekType.PRESEASON:
-            return 0
-        
-        if self.week_type == WeekType.REGULAR:
-            return self.week_num
-        
-        return season_length + self.week_num
-
-    def SetWeekNum(self,num):
-        if not isinstance(num,int):
-            raise TypeError('Week can only be an integer value')
-        self.week_num = num
-
-    def SetWeekType(self,type):
-        if not isinstance(type,WeekType):
-            raise TypeError('Expected WeekType enumerable object')
-        self.week_type = type
-    
-    def SetSeason(self,year,year_override = False):
-        if not isinstance(year,int):
-            raise TypeError('Year can only be an integer value')
-        
-        if year < 2000 and not year_override:
-            raise ValueError('Year cannot be earlier than 2000')
-        
-        self.season = year

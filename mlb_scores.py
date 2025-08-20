@@ -9,26 +9,23 @@ import requests
 from datetime import date
 from scorecard import Scorecard
 
-def GetScoreUrl(startDate,endDate,default = False):
+def GetScoreUrl(startDate: date, endDate: date, default: bool = False) -> str:
     if startDate is None and endDate is None:
         default = True
-
-    if (not default) and (not (isinstance(startDate,date) and isinstance(endDate,date))):
-        raise TypeError('One or more date entries are invalid data types (datetime.date is valid)')
 
     if default:
         return 'https://statsapi.mlb.com/api/v1/schedule?sportId=1'
     
     return f'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate={str(startDate)}&endDate={str(endDate)}'
 
-def LoadScoreJson(startDate,endDate,default = False):
+def LoadScoreJson(startDate: date, endDate: date, default: bool = False) -> dict:
     url = GetScoreUrl(startDate,endDate,default)
     r = requests.get(url)
     if r.status_code != 200:
         raise requests.HTTPError('Failed to load scores')
     return r.json()
 
-def LoadTeams():
+def LoadTeams() -> dict:
     r = requests.get('https://statsapi.mlb.com/api/v1/teams?sportId=1')
     if r.status_code != 200:
         raise requests.HTTPError('Failed to load teams')
@@ -48,7 +45,7 @@ def LoadTeams():
 
     return teams
 
-def ConvertToScorecard(game,team_dict,ignoreLive = True):
+def ConvertToScorecard(game: dict, team_dict: dict, ignoreLive: bool = True) -> Scorecard:
     teams = game['teams']
 
     away_team = teams['away']
@@ -117,7 +114,7 @@ def ConvertToScorecard(game,team_dict,ignoreLive = True):
 
     return card
 
-def GetScores(startDate,endDate,default = False,ignoreLive = True):
+def GetScores(startDate: date, endDate: date, default: bool = False, ignoreLive: bool = True) -> list[Scorecard]:
     score_json = LoadScoreJson(startDate,endDate,default)
     team_dict = LoadTeams()
 
@@ -130,13 +127,10 @@ def GetScores(startDate,endDate,default = False,ignoreLive = True):
 
     return scorecards
 
-def GetScoresOnDay(day,default = False, ignoreLive = False):
-    if (not default) and (not isinstance(day,date)):
-        raise TypeError('Expected datetime.date object')
-    
+def GetScoresOnDay(day: date, default: bool = False, ignoreLive: bool = False) -> list[Scorecard]:
     return GetScores(day,day,default,ignoreLive)
 
-def main():
+def main() -> None:
     today = date.today()
     scores = GetScoresOnDay(today)
     for score in scores:

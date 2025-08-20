@@ -10,13 +10,20 @@ from scorecard import Scorecard
 from datetime import date
 from time import time, sleep
 
+try:
+    from pandas import DataFrame
+    pd_enabled = True
+except ModuleNotFoundError | ImportError as e:
+    pd_exception = e
+    pd_enabled = False
+
 import json
 
 class LoadError(LookupError):
     pass
 
 class ScoreLoader:
-    def __init__(self):
+    def __init__(self) -> None:
         self.mlb_scores = {}
         self.nba_scores = {}
         self.nfl_scores = {}
@@ -28,16 +35,16 @@ class ScoreLoader:
 
         self.loaded_scores = {}
 
-    def _timeSinceMLBLastLoad(self):
+    def _timeSinceMLBLastLoad(self) -> float:
         return time() - self.last_mlb_load_time
     
-    def _timeSinceNBALastLoad(self):
+    def _timeSinceNBALastLoad(self) -> float:
         return time() - self.last_nba_load_time
     
-    def _timeSinceNFLLastLoad(self):
+    def _timeSinceNFLLastLoad(self) -> float:
         return time() - self.last_nfl_load_time
 
-    def GetMLBScores(self,day,default = False):
+    def GetMLBScores(self, day: date, default: bool = False) -> list[Scorecard]:
         if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
@@ -66,7 +73,7 @@ class ScoreLoader:
             self.last_mlb_load_time = time()
             return scores
 
-    def GetNFLScores(self,day,default = False):
+    def GetNFLScores(self, day: date, default: bool = False) -> list[Scorecard]:
         if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
@@ -95,7 +102,7 @@ class ScoreLoader:
             self.last_nfl_load_time = time()
             return scores        
 
-    def GetNBAScores(self,day,default = False):
+    def GetNBAScores(self, day: date, default: bool = False) -> list[Scorecard]:
         if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
@@ -124,7 +131,7 @@ class ScoreLoader:
             self.last_nba_load_time = time()
             return scores
         
-    def LoadAllScores(self,day,default = False):
+    def LoadAllScores(self, day: date, default: bool = False) -> dict:
         if not (default or isinstance(day,date)):
             raise TypeError('Expected datetime.date object')
 
@@ -138,10 +145,9 @@ class ScoreLoader:
         }
 
         self.loaded_scores = scoreboard
-
         return scoreboard
     
-    def GetScoreDataframe(self):
+    def GetScoreDataframe(self) -> DataFrame:
         if len(self.loaded_scores) <= 0:
             raise LoadError('No loaded scores')
         
@@ -154,14 +160,12 @@ class ScoreLoader:
                 score_ds['league'] = str.upper(league)
                 ds_list.append(score_ds)
         
-        try:
-            from pandas import DataFrame
+        if pd_enabled:
             df = DataFrame(ds_list)
             return df
-        except ImportError as e:
-            raise e
+        raise pd_exception
 
-    def DumpLoadedScores(self,indent=0):
+    def DumpLoadedScores(self, indent: int = 0) -> str:
         if len(self.loaded_scores) <= 0:
             raise LoadError('No loaded scores')
         
@@ -184,7 +188,7 @@ class ScoreLoader:
 
         return dump
     
-    def DumpToFile(self,filename):
+    def DumpToFile(self, filename: str) -> None:
         dump = self.DumpLoadedScores(indent=4)
 
         with open(filename,'w') as file:

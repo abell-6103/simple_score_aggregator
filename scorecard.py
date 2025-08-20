@@ -4,10 +4,15 @@ Scorecard contains team names, abbreviations, scores, game status, and the date 
 """
 
 from datetime import date
-import pandas as pd
+try:
+    import pandas as pd
+    pd_enabled = True
+except ImportError | ModuleNotFoundError as e:
+    pd_exception = e
+    pd_enabled = False
 
 class Scorecard:
-    def __init__(self):
+    def __init__(self) -> None:
         self.name_team1 = None
         self.name_team2 = None
 
@@ -21,7 +26,7 @@ class Scorecard:
 
         self.date = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         score_str = ""
 
         if self.abbr_team1 is not None and self.abbr_team2 is not None:
@@ -37,8 +42,6 @@ class Scorecard:
             else:
                 score_str += f' @ {self.name_team2}'
         
-        
-        
         if self.game_state is not None:
             score_str += f' | {self.game_state}'
         
@@ -47,10 +50,7 @@ class Scorecard:
 
         return score_str
 
-    def __ge__(self,other):
-        if not isinstance(other,Scorecard):
-            raise TypeError('Cannot compare scorecard to non-scorecard')
-        
+    def __ge__(self, other: 'Scorecard'):
         self_state = self.game_state
         other_state = other.game_state
 
@@ -61,18 +61,18 @@ class Scorecard:
 
         return self_state >= other_state
     
-    def __lt__(self,other):
+    def __lt__(self, other: 'Scorecard') -> bool:
         return not self.__ge__(other)
 
-    def setNames(self,name_team1,name_team2):
+    def setNames(self, name_team1: str, name_team2: str) -> None:
         self.name_team1 = name_team1
         self.name_team2 = name_team2
 
-    def setAbbrs(self,abbr_team1,abbr_team2):
+    def setAbbrs(self, abbr_team1: str, abbr_team2: str) -> None:
         self.abbr_team1 = abbr_team1
         self.abbr_team2 = abbr_team2
 
-    def setScore(self,score_team1,score_team2):
+    def setScore(self, score_team1: int, score_team2: int) -> None:
         if score_team1 is not None:
             score_team1 = int(score_team1)
         if score_team2 is not None:
@@ -81,15 +81,13 @@ class Scorecard:
         self.score_team1 = score_team1
         self.score_team2 = score_team2
 
-    def setState(self,state):
+    def setState(self, state: str) -> None:
         self.game_state = state
 
-    def setDate(self,day):
-        if not isinstance(day,date):
-            raise TypeError('Expected date object')
+    def setDate(self, day: date) -> None:
         self.date = day
 
-    def getDict(self):
+    def getDict(self) -> dict:
         return {
             'away_team_name' : self.name_team1,
             'away_team_abbr' : self.abbr_team1,
@@ -101,7 +99,9 @@ class Scorecard:
             'game_date' : str(self.date)
         }
     
-    def getSeries(self):
+    def getSeries(self) -> pd.Series:
         score_dict = self.getDict()
-        ds = pd.Series(score_dict,index=score_dict.keys())
-        return ds
+        if pd_enabled:
+            ds = pd.Series(score_dict,index=score_dict.keys())
+            return ds
+        raise pd_exception

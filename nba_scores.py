@@ -14,28 +14,25 @@ from scorecard import Scorecard
 
 _score_url = 'https://www.nba.com/games?date='
 
-def GetScoreUrl(day,default = False):
+def GetScoreUrl(day: date, default = False) -> str:
     if default:
         return 'https://www.nba.com/games'
-    
-    if not isinstance(day,date):
-        raise TypeError('Expected Date object')
     return _score_url + str(day)
 
-def GetSite(day,default = False):
-    score_url = GetScoreUrl(day,default)
+def GetSite(day: date, default: bool = False) -> requests.Response:
+    score_url = GetScoreUrl(day, default)
     data = requests.get(score_url)
     if data.status_code != 200:
         data.raise_for_status()
     return data
 
-def GetSoup(day,default = False):
+def GetSoup(day: date, default: bool = False) -> BeautifulSoup:
     scores_site = GetSite(day,default)
     if scores_site is None:
         return None
     return BeautifulSoup(scores_site.text,'html.parser')
 
-def FindScoreScript(soup):
+def FindScoreScript(soup: BeautifulSoup) -> (dict | None):
     if not isinstance(soup,BeautifulSoup):
         raise TypeError('Expected BeautifulSoup object')
     scripts = soup.find_all('script')
@@ -46,13 +43,13 @@ def FindScoreScript(soup):
             return script_details
     return None
 
-def NoScores(scorecard_json):
+def NoScores(scorecard_json: dict) -> bool:
     modules = scorecard_json['props']['pageProps']['gameCardFeed']['modules']
     if len(modules) > 0:
         return False
     return True
 
-def ProcessCard(card):
+def ProcessCard(card: dict) -> Scorecard:
     data = card['cardData']
     home_team = data['homeTeam']
     away_team = data['awayTeam']
@@ -90,7 +87,7 @@ def ProcessCard(card):
 
     return scorecard
 
-def GetScores(day,default = False):
+def GetScores(day: date, default: bool = False) -> list[Scorecard]:
     soup = GetSoup(day,default)
     if soup is None:
         warnings.warn('NBA scores site did not properly load')
@@ -112,7 +109,7 @@ def GetScores(day,default = False):
 
     return scores
     
-def main():
+def main() -> None:
     today = date.today()
     scores = GetScores(today)
     for score in scores:
