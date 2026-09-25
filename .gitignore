@@ -1,5 +1,7 @@
-/__pycache__
-/temp.py
-/*.json
-/old_mlb_scores.py
-/old_nfl_scores.py
+__pycache__/
+venv/
+
+temp.py
+*.json
+old_mlb_scores.py
+old_nfl_scores.py
